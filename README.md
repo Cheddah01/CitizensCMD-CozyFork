@@ -1,7 +1,7 @@
 # Cozy Crafters private CitizensCMD fork
 
 Private maintenance fork for **Paper 26.2 / Java 25**, starting with
-**2.7.3-cozy.2**. Keeps the `CitizensCMD` plugin name, `/npcmd`, permissions,
+**2.7.3-cozy.3**. Keeps the `CitizensCMD` plugin name, `/npcmd`, permissions,
 NPC IDs, and existing data paths. Built against Citizens API 2.0.43-SNAPSHOT;
 the server must also run a Citizens build that supports Minecraft 26.2.
 
@@ -12,7 +12,7 @@ JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-25.jdk/Contents/Home mvn cle
 ```
 
 On other systems, set `JAVA_HOME` to the installed Java 25 JDK.
-Install `target/CitizensCMD-2.7.3-cozy.2.jar`, not the `original-` JAR.
+Install `target/CitizensCMD-2.7.3-cozy.3.jar`, not the `original-` JAR.
 Maven resolves dependencies from their public repositories; Citizens and Triumph
 remain snapshot dependencies inherited from the upstream build setup.
 
@@ -31,6 +31,22 @@ remain snapshot dependencies inherited from the upstream build setup.
 Vault and PlaceholderAPI remain optional. Test prices with the server's actual
 Vault economy provider and placeholders with its installed expansions. A staging
 server should also test with both optional plugins absent and a PlugManX reload.
+
+## NPC sounds
+
+With an NPC selected, add a sound using `sound [volume] [pitch]`:
+
+```text
+/npcmd add sound ENTITY_VILLAGER_YES 1 1
+/npcmd add sound minecraft:entity.villager.yes 0.7 1.4
+```
+
+Volume and pitch both default to 1 when omitted. Existing Bukkit names remain
+supported, along with Minecraft resource keys and resource-pack sound keys.
+Client resource-pack sounds require that sound to exist in the player's pack.
+Malformed entries now log a warning identifying the NPC. Version 2.7.3-cozy.3
+fixes the uppercase-name playback failure, dotted/namespaced parsing, and the
+old bug that wrote pitch into volume. Existing saved entries need no migration.
 
 ## PlugManX reloads
 
@@ -65,7 +81,7 @@ Command reference: https://github.com/Test-Account666/PlugManX
   `CitizensCMD.getApi()` remains; the old internal `getAudiences()` bridge is removed.
 - Shutdown flushes cooldowns, cancels tasks, unregisters commands/channels,
   shuts down metrics, and clears static API/economy references.
-- Nine automated tests cover data preservation, invalid-file protection, late saves,
+- Fourteen automated tests cover data preservation, invalid-file protection, late saves,
   command removal, temporary permissions, cleanup failures, config, and chat parsing.
 - Build and automated tests pass. Actual NPC clicks, optional integrations, and
   PlugManX reload have **not** been tested on a running server.

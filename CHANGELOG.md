@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.7.3-cozy.3 — 2026-09-14
+
+- Fix Bukkit sound names such as ENTITY_VILLAGER_YES falling through to raw
+  resource-key playback and throwing an IdentifierException on Paper 26.2.
+- Resolve legacy names directly with case normalization, without Sound.values/name scanning.
+- Preserve complete dotted/namespaced sound names and parse optional volume/pitch separately.
+- Correct pitch assignment, reject malformed arguments, and log the affected NPC.
+- Preserve existing sound entries and PlugManX lifecycle handling.
+- Clean build passes all 14 tests; five sound tests cover parsing, playback arguments,
+  the reported command lookup path, and invalid-name handling. Actual audible playback
+  remains a server-side verification step.
+
 ## 2.7.3-cozy.2 — 2026-09-14
 
 - Remove owned command-map entries explicitly; upstream Triumph unregister is a no-op.

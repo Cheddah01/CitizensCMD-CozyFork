@@ -32,13 +32,11 @@ import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-import com.google.common.primitives.Floats;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.mattstudios.citizenscmd.CitizensCMD;
@@ -47,6 +45,7 @@ import me.mattstudios.citizenscmd.schedulers.ConfirmScheduler;
 import me.mattstudios.citizenscmd.utility.EnumTypes;
 import me.mattstudios.citizenscmd.utility.Messages;
 import me.mattstudios.citizenscmd.utility.Util;
+import me.mattstudios.citizenscmd.utility.SoundCommand;
 import net.citizensnpcs.api.event.NPCLeftClickEvent;
 import net.citizensnpcs.api.event.NPCRightClickEvent;
 import net.citizensnpcs.api.npc.NPC;
@@ -57,7 +56,6 @@ public class NPCClickListener implements Listener {
 
     private static final Pattern MAIN_PATTERN = Pattern.compile("\\[([^]]*)] (.*)");
     private static final Pattern PERMISSION_PATTERN = Pattern.compile("(.*)\\(([^]]*)\\)");
-    private static final Pattern SOUND_PATTERN = Pattern.compile("(?<sound>\\w+)\\s?(?<volume>[\\d.]+) ?(?<pitch>[\\d.]+)?");
 
     private final CitizensCMD plugin;
 
@@ -306,41 +304,12 @@ public class NPCClickListener implements Listener {
 
                 case "sound":
                     getScheduler().runTaskLater(plugin, () -> {
-                        String sound = commands.get(finalI);
-                        final Matcher matcher = SOUND_PATTERN.matcher(sound);
-
-                        float volume = 1f;
-                        final float pitch = 1f;
-
-                        if (matcher.find()) {
-                            sound = matcher.group("sound");
-
-                            final String volumeString = matcher.group("volume");
-                            final String pitchString = matcher.group("pitch");
-
-                            if (volumeString != null) {
-                                final Float nullableVolume = Floats.tryParse(volumeString);
-                                if (nullableVolume != null) {
-                                    volume = nullableVolume;
-                                }
-                            }
-
-                            if (pitchString != null) {
-                                final Float nullablePitch = Floats.tryParse(pitchString);
-                                if (nullablePitch != null) {
-                                    volume = nullablePitch;
-                                }
-                            }
+                        try {
+                            SoundCommand.parse(commands.get(finalI)).play(player);
+                        } catch (IllegalArgumentException exception) {
+                            plugin.getLogger().warning("Invalid sound command on NPC " + npc.getId()
+                                    + ": " + commands.get(finalI) + " (" + exception.getMessage() + ")");
                         }
-
-                        if (!Util.soundExists(sound)) {
-                            player.playSound(player.getLocation(), sound, volume, pitch);
-                            return;
-                        }
-
-                        final Sound bukkitSound = Sound.valueOf(sound);
-
-                        player.playSound(player.getLocation(), bukkitSound, volume, pitch);
                     }, (int) delay * 20L);
                     break;
 
