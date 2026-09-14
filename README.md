@@ -1,3 +1,58 @@
+# Cozy Crafters private CitizensCMD fork
+
+Private maintenance fork for **Paper 26.2 / Java 25**, starting with
+**2.7.3-cozy.1**. Keeps the `CitizensCMD` plugin name, `/npcmd`, permissions,
+NPC IDs, and existing data paths. Built against Citizens API 2.0.43-SNAPSHOT;
+the server must also run a Citizens build that supports Minecraft 26.2.
+
+## Build
+
+```sh
+JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-25.jdk/Contents/Home mvn clean verify
+```
+
+On other systems, set `JAVA_HOME` to the installed Java 25 JDK.
+Install `target/CitizensCMD-2.7.3-cozy.1.jar`, not the `original-` JAR.
+Maven resolves dependencies from their public repositories; Citizens and Triumph
+remain snapshot dependencies inherited from the upstream build setup.
+
+## Upgrade from 2.7.2
+
+1. Stop the server and back up `plugins/CitizensCMD/` and `plugins/Citizens/`.
+   Run `/npcmd reload` before stopping the old plugin to flush recent cooldowns.
+2. Replace the old CitizensCMD JAR with the new JAR; leave only one copy installed.
+3. Keep the complete CitizensCMD data folder, including `config.yml`, `lang/`,
+   `data/saves.yml`, and `data/cooldowns.yml`. No data migration is required.
+4. Start with Paper 26.2, Java 25, and a compatible Citizens build.
+5. Check `/npcmd`, left/right clicks, console/player/permission commands,
+   delayed commands, messages, sounds, prices, and cooldowns using a test NPC.
+   Confirm one-time actions remain consumed after restart.
+
+Vault and PlaceholderAPI remain optional. Test prices with the server's actual
+Vault economy provider and placeholders with its installed expansions. A staging
+server should also test with both optional plugins absent and a PlugManX reload.
+
+## Maintenance
+
+- Local branch: `cozy/26.2`; `upstream` points to HexedHero/CitizensCMD.
+- No private GitHub repository has been created and nothing has been pushed.
+- Upstream update checks are disabled, including when an existing config retains
+  `check-updates: true`, so this fork does not recommend replacing itself with 2.7.2.
+- Messaging now uses Paper's native Adventure API. The documented
+  `CitizensCMD.getApi()` remains; the old internal `getAudiences()` bridge is removed.
+- Shutdown flushes cooldowns, cancels tasks, unregisters commands/channels,
+  shuts down metrics, and clears static API/economy references.
+- Three automated tests cover data preservation across shutdown/reload, fresh
+  installation and existing config, and language/native Adventure parsing.
+- Build and automated tests pass. Actual NPC clicks, optional integrations, and
+  PlugManX reload have **not** been tested on a running server.
+
+See [CHANGELOG.md](CHANGELOG.md) and [NOTICE.md](NOTICE.md).
+
+---
+
+## Upstream project information
+
 ![CitizensCMD Logo](https://i.imgur.com/Tlweggt.png)
 [![Spigot Project](https://img.shields.io/badge/Spigot-CitizensCMD-blue.svg?longCache=true&style=flat-square)](https://www.spigotmc.org/resources/30224/)
 [![GitHub issues](https://img.shields.io/github/issues/HexedHero/CitizensCMD.svg?longCache=true&style=flat-square)](https://github.com/HexedHero/CitizensCMD/issues)

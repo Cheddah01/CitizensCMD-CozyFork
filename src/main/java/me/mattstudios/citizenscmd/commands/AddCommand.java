@@ -41,7 +41,7 @@ public class AddCommand extends Npcmd {
             ) {
         final OptionalInt selectedNpc = getSelectedNpcId(sender);
 
-        final Audience audience = plugin.getAudiences().sender(sender);
+        final Audience audience = sender;
 
         if (!selectedNpc.isPresent()) {
             sendNotSelectedMessage(plugin, audience);

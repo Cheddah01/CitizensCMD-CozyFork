@@ -35,7 +35,7 @@ public class ListCommand extends Npcmd {
     @SubCommand("list")
     @Permission("citizenscmd.list")
     public void list(Player player) {
-        final Audience audience = plugin.getAudiences().player(player);
+        final Audience audience = player;
 
         final OptionalInt selectedNpc = getSelectedNpcId(player);
 

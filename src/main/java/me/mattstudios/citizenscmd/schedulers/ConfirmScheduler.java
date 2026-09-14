@@ -34,7 +34,7 @@ public class ConfirmScheduler extends BukkitRunnable {
 
     public ConfirmScheduler(CitizensCMD plugin, Player player, int npc) {
         this.player = player;
-        this.audience = plugin.getAudiences().player(player);
+        this.audience = player;
         this.npc = npc;
         this.plugin = plugin;
     }

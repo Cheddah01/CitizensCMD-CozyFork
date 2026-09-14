@@ -73,7 +73,7 @@ public class CooldownHandler {
             try {
                 cooldownsFile.createNewFile();
             } catch (final IOException e) {
-                plugin.getAudiences().console().sendMessage(LEGACY.deserialize("&cError creating cooldowns file.."));
+                plugin.getServer().getConsoleSender().sendMessage(LEGACY.deserialize("&cError creating cooldowns file.."));
             }
         }
     }
@@ -108,7 +108,10 @@ public class CooldownHandler {
     /**
      * Saves cached data to file
      */
-    public void saveToFile() {
+    public synchronized void saveToFile() {
+        if (cooldownsConfigurator == null || cooldownsFile == null) {
+            return;
+        }
         try {
             createBasics();
             cooldownsConfigurator.load(cooldownsFile);

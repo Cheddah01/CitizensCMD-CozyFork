@@ -13,7 +13,6 @@ import dev.triumphteam.cmd.core.annotation.Default;
 import me.mattstudios.citizenscmd.CitizensCMD;
 import me.mattstudios.citizenscmd.utility.Messages;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -25,17 +24,15 @@ import net.kyori.adventure.text.format.TextDecoration;
 public class HelpCommand extends Npcmd {
 
     private final CitizensCMD plugin;
-    private final BukkitAudiences audiences;
 
     public HelpCommand(final CitizensCMD plugin) {
         this.plugin = plugin;
-        this.audiences = plugin.getAudiences();
     }
 
     @Default
     @Permission("citizenscmd.npcmd")
     public void help(Player player) {
-        final Audience audience = audiences.player(player);
+        final Audience audience = player;
 
         final TextComponent.Builder builder = Component.text();
 

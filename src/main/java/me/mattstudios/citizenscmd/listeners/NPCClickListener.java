@@ -70,7 +70,7 @@ public class NPCClickListener implements Listener {
     public void onNPCRightClick(NPCRightClickEvent event) {
         final NPC npc = event.getNPC();
         final Player player = event.getClicker();
-        final Audience audience = plugin.getAudiences().player(player);
+        final Audience audience = player;
 
         if (!player.hasPermission("citizenscmd.use")) {
             return;
@@ -153,7 +153,7 @@ public class NPCClickListener implements Listener {
     public void onNPCLeftClick(NPCLeftClickEvent event) {
         final NPC npc = event.getNPC();
         final Player player = event.getClicker();
-        final Audience audience = plugin.getAudiences().player(player);
+        final Audience audience = player;
 
         if (!player.hasPermission("citizenscmd.use")) {
             return;
@@ -293,7 +293,7 @@ public class NPCClickListener implements Listener {
                                 .replace("{display}", plugin.getLang().getUncoloredMessage(Messages.MESSAGE_DISPLAY))
                                 .replace("{name}", npc.getFullName());
 
-                        final Audience audience = plugin.getAudiences().player(player);
+                        final Audience audience = player;
 
                         if (plugin.getSettings().getProperty(Settings.MINIMESSAGE)) {
                             audience.sendMessage(MINIMESSAGE.deserialize(finalMessage));

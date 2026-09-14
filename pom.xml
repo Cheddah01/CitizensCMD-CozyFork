@@ -6,23 +6,25 @@
 
     <groupId>me.mattstudios.plugins</groupId>
     <artifactId>CitizensCMD</artifactId>
-    <version>2.7.2</version>
+    <version>2.7.3-cozy.1</version>
     <packaging>jar</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spigot.version>1.21.3-R0.1-SNAPSHOT</spigot.version>
-        <citizens.version>2.0.36-SNAPSHOT</citizens.version>
+        <paper.version>26.2.build.117-stable</paper.version>
+        <citizens.version>2.0.43-SNAPSHOT</citizens.version>
         <papi.version>2.11.6</papi.version>
         <vault.version>1.7</vault.version>
-        <adventure.version>4.17.0</adventure.version>
-        <adventure-bukkit.version>4.3.4</adventure-bukkit.version>
         <configme.version>1.4.1</configme.version>
         <triumph-cmd.version>2.0.0-SNAPSHOT</triumph-cmd.version>
         <bstats.version>3.1.0</bstats.version>
     </properties>
 
     <repositories>
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2/</url>
+        </repository>
         <repository>
             <id>Triumph-Repo</id>
             <url>https://repo.triumphteam.dev/snapshots/</url>
@@ -32,8 +34,8 @@
             <url>https://repo.citizensnpcs.co/</url>
         </repository>
         <repository>
-            <id>SpigotMC-Repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+            <id>papermc</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
         <repository>
             <id>Rayzr-Repo</id>
@@ -58,12 +60,24 @@
     </repositories>
 
     <dependencies>
-        <!-- Provided -->
-        <!-- Spigot API -->
         <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
-            <version>${spigot.version}</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.11.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.23.0</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Provided -->
+        <!-- Paper API (also provides Adventure) -->
+        <dependency>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>${paper.version}</version>
             <scope>provided</scope>
         </dependency>
         <!-- Citizens API -->
@@ -89,25 +103,6 @@
         </dependency>
 
         <!-- Compile -->
-        <!-- Adventure! -->
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-api</artifactId>
-            <version>${adventure.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-text-minimessage</artifactId>
-            <version>${adventure.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-platform-bukkit</artifactId>
-            <version>${adventure-bukkit.version}</version>
-            <scope>compile</scope>
-        </dependency>
         <!-- Configuration -->
         <dependency>
             <groupId>ch.jalu</groupId>
@@ -136,17 +131,24 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.3</version>
+                <configuration>
+                    <argLine>-javaagent:${settings.localRepository}/org/mockito/mockito-core/5.23.0/mockito-core-5.23.0.jar</argLine>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.12.1</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <release>25</release>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.5.1</version>
+                <version>3.6.1</version>
                 <configuration>
                     <filters>
                         <filter>
@@ -164,10 +166,6 @@
                         <relocation>
                             <pattern>dev.triumphteam</pattern>
                             <shadedPattern>me.mattstudios.citizenscmd.shaded.triumphteam</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>net.kyori</pattern>
-                            <shadedPattern>me.mattstudios.citizenscmd.shaded.kyori</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>ch.jalu</pattern>
@@ -194,13 +192,20 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <minimizeJar>true</minimizeJar>
+                            <minimizeJar>false</minimizeJar>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
         <resources>
+            <resource>
+                <directory>${project.basedir}</directory>
+                <includes>
+                    <include>LICENSE</include>
+                    <include>NOTICE.md</include>
+                </includes>
+            </resource>
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>

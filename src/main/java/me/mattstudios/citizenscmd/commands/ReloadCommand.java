@@ -27,7 +27,7 @@ public class ReloadCommand extends Npcmd {
     @Permission("citizenscmd.reload")
     public void reload(final CommandSender player) {
 
-        final Audience audience = plugin.getAudiences().sender(player);
+        final Audience audience = player;
 
         settings.reload();
         plugin.setLang(settings.getProperty(Settings.LANG));

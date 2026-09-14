@@ -48,7 +48,7 @@ public class UpdateEvent implements Listener {
             return;
         }
 
-        final Audience audience = plugin.getAudiences().player(event.getPlayer());
+        final Audience audience = event.getPlayer();
 
         final TextComponent.Builder builder = Component.text();
         builder.append(HEADER).append(newline());

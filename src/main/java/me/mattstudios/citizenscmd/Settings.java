@@ -10,8 +10,8 @@ public final class Settings implements SettingsHolder {
 
     private Settings() {}
 
-    @Comment({"", "Enables Checking for update."})
-    public static final Property<Boolean> CHECK_UPDATES = PropertyInitializer.newProperty("check-updates", true);
+    @Comment({"", "Legacy setting retained for compatibility; upstream update checks are disabled in this private fork."})
+    public static final Property<Boolean> CHECK_UPDATES = PropertyInitializer.newProperty("check-updates", false);
 
     @Comment({"", "Available languages EN, PT, BG, RO, NO, CH, CN, CS, FR, JA"})
     public static final Property<String> LANG = PropertyInitializer.newProperty("lang", "EN");

@@ -58,20 +58,12 @@ import me.mattstudios.citizenscmd.files.DataHandler;
 import me.mattstudios.citizenscmd.files.LangHandler;
 import me.mattstudios.citizenscmd.listeners.NPCClickListener;
 import me.mattstudios.citizenscmd.listeners.NPCListener;
-import me.mattstudios.citizenscmd.listeners.UpdateEvent;
 import me.mattstudios.citizenscmd.permissions.PermissionsManager;
 import me.mattstudios.citizenscmd.schedulers.CooldownScheduler;
-import me.mattstudios.citizenscmd.schedulers.UpdateScheduler;
-import me.mattstudios.citizenscmd.updater.SpigotUpdater;
 import me.mattstudios.citizenscmd.utility.DisplayFormat;
 import me.mattstudios.citizenscmd.utility.Messages;
 import me.mattstudios.citizenscmd.utility.Util;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.milkbowl.vault.economy.Economy;
 
 public final class CitizensCMD extends JavaPlugin {
@@ -80,8 +72,7 @@ public final class CitizensCMD extends JavaPlugin {
     private DataHandler dataHandler;
     private CooldownHandler cooldownHandler;
     private PermissionsManager permissionsManager;
-
-    private BukkitAudiences audiences;
+    private Metrics metrics;
 
     private static CitizensCMDAPI api;
     private static Economy economy;
@@ -101,12 +92,11 @@ public final class CitizensCMD extends JavaPlugin {
     @Override
     public void onEnable() {
         // Init setup
-        audiences = BukkitAudiences.create(this);
-        final Audience console = audiences.console();
+        final Audience console = getServer().getConsoleSender();
 
         // Enabling lets go!
         console.sendMessage(TAG.append(LEGACY.deserialize("&3Citizens&cCMD &8&o" + getDescription().getVersion())));
-        console.sendMessage(TAG.append(LEGACY.deserialize("&8by &3Mateus Moreira &c@LichtHund &8& Maintained by &3HexedHero")));
+        console.sendMessage(TAG.append(LEGACY.deserialize("&8by &3Mateus Moreira &c@LichtHund &8& Upstream by &3HexedHero &8| Cozy Crafters fork")));
 
         // Data
         dataHandler = new DataHandler(this);
@@ -161,36 +151,29 @@ public final class CitizensCMD extends JavaPlugin {
         api = new CitizensCMDAPI(dataHandler);
 
         // Metrics
-        final Metrics metrics = new Metrics(this, 2652);
+        metrics = new Metrics(this, 2652);
         Util.setUpMetrics(metrics, settings);
 
-        // Tasks
-        new UpdateScheduler(this).runTaskTimerAsynchronously(this, 72000L, 72000L);
+        // Only cooldown persistence is scheduled in this private fork.
         new CooldownScheduler(this).runTaskTimerAsynchronously(this, 36000L, 36000L);
-
-        // Check for updates
-        if (settings.getProperty(Settings.CHECK_UPDATES)) {
-            final SpigotUpdater updater = new SpigotUpdater(this, 30224);
-            try {
-                // If there's an update, tell the user that they can update
-                if (updater.checkForUpdates()) {
-                    updateStatus = true;
-                    newVersion = updater.getLatestVersion();
-                    console.sendMessage(TAG.append(lang.getMessage(Messages.STARTUP_NEW_VERSION).style(Style.style(NamedTextColor.AQUA, TextDecoration.ITALIC))));
-                    console.sendMessage(TAG.append(Component.text(updater.getResourceURL()).style(Style.style(NamedTextColor.AQUA, TextDecoration.ITALIC))));
-                }
-            } catch (final Exception ignored) {
-            }
-        }
     }
 
     @Override
     public void onDisable() {
-        // Clean up Adventure
-        if (audiences != null) {
-            audiences.close();
-            audiences = null;
+        getServer().getScheduler().cancelTasks(this);
+        if (cooldownHandler != null) {
+            cooldownHandler.saveToFile();
         }
+        if (commandManager != null) {
+            commandManager.unregisterCommands();
+        }
+        if (metrics != null) {
+            metrics.shutdown();
+        }
+        waitingList.clear();
+        api = null;
+        economy = null;
+        getServer().getMessenger().unregisterOutgoingPluginChannel(this);
     }
 
     /**
@@ -213,32 +196,32 @@ public final class CitizensCMD extends JavaPlugin {
         commandManager.registerSuggestion(SuggestionKey.of("range"), (sender, context) -> IntStream.rangeClosed(1, 9).mapToObj(String::valueOf).collect(Collectors.toList()));
 
         commandManager.registerMessage(BukkitMessageKey.NO_PERMISSION, (sender, context) -> {
-            final Audience audience = audiences.sender(sender);
+            final Audience audience = sender;
             audience.sendMessage(HEADER);
             audience.sendMessage(lang.getMessage(Messages.NO_PERMISSION));
         });
         commandManager.registerMessage(BukkitMessageKey.PLAYER_ONLY, (sender, context) -> {
-            final Audience audience = audiences.sender(sender);
+            final Audience audience = sender;
             audience.sendMessage(HEADER);
             audience.sendMessage(lang.getMessage(Messages.CONSOLE_NOT_ALLOWED));
         });
         commandManager.registerMessage(MessageKey.UNKNOWN_COMMAND, (sender, context) -> {
-            final Audience audience = audiences.sender(sender);
+            final Audience audience = sender;
             audience.sendMessage(HEADER);
             audience.sendMessage(lang.getMessage(Messages.WRONG_USAGE));
         });
         commandManager.registerMessage(MessageKey.INVALID_ARGUMENT, (sender, context) -> {
-            final Audience audience = audiences.sender(sender);
+            final Audience audience = sender;
             audience.sendMessage(HEADER);
             audience.sendMessage(lang.getMessage(Messages.WRONG_USAGE));
         });
         commandManager.registerMessage(MessageKey.TOO_MANY_ARGUMENTS, (sender, context) -> {
-            final Audience audience = audiences.sender(sender);
+            final Audience audience = sender;
             audience.sendMessage(HEADER);
             audience.sendMessage(lang.getMessage(Messages.WRONG_USAGE));
         });
         commandManager.registerMessage(MessageKey.NOT_ENOUGH_ARGUMENTS, (sender, context) -> {
-            final Audience audience = audiences.sender(sender);
+            final Audience audience = sender;
             audience.sendMessage(HEADER);
             audience.sendMessage(lang.getMessage(Messages.WRONG_USAGE));
         });
@@ -261,13 +244,12 @@ public final class CitizensCMD extends JavaPlugin {
      */
     private void registerEvents() {
         final PluginManager pm = getServer().getPluginManager();
-        pm.registerEvents(new UpdateEvent(this), this);
 
         try {
             pm.registerEvents(new NPCClickListener(this), this);
             pm.registerEvents(new NPCListener(this), this);
         } catch (final Exception ex) {
-            audiences.console().sendMessage(TAG.append(LEGACY.deserialize("&cCould not register NPC events, please update your Citizens plugin!")));
+            getServer().getConsoleSender().sendMessage(TAG.append(LEGACY.deserialize("&cCould not register NPC events, please update your Citizens plugin!")));
         }
     }
 
@@ -296,15 +278,6 @@ public final class CitizensCMD extends JavaPlugin {
      */
     public SettingsManager getSettings() {
         return settings;
-    }
-
-    /**
-     * Gets adventure's audiences for JSON messages.
-     *
-     * @return The BukkitAudiences.
-     */
-    public BukkitAudiences getAudiences() {
-        return audiences;
     }
 
     /**

@@ -29,7 +29,7 @@ public class RemoveCommand extends Npcmd {
     public void remove(final CommandSender sender, @Suggestion("click") final String clickString, final int id) {
         final OptionalInt selectedNpc = getSelectedNpcId(sender);
 
-        final Audience audience = plugin.getAudiences().sender(sender);
+        final Audience audience = sender;
 
         if (!selectedNpc.isPresent()) {
             sendNotSelectedMessage(plugin, audience);

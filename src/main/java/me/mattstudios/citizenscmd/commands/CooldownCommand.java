@@ -26,7 +26,7 @@ public class CooldownCommand extends Npcmd {
     public void cooldown(final CommandSender sender, @Suggestion("range") final int cooldown) {
         final OptionalInt selectedNpc = getSelectedNpcId(sender);
 
-        final Audience audience = plugin.getAudiences().sender(sender);
+        final Audience audience = sender;
 
         if (!selectedNpc.isPresent()) {
             sendNotSelectedMessage(plugin, audience);
