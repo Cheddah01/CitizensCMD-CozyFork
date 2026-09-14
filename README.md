@@ -73,8 +73,8 @@ Command reference: https://github.com/Test-Account666/PlugManX
 
 ## Maintenance
 
-- Local branch: `cozy/26.2`; `upstream` points to HexedHero/CitizensCMD.
-- No private GitHub repository has been created and nothing has been pushed.
+- Server fork: [Cheddah01/CitizensCMD-CozyFork](https://github.com/Cheddah01/CitizensCMD-CozyFork), branch `master`.
+- Local branch: `cozy/26.2`, tracking `origin/master`; `upstream` remains HexedHero/CitizensCMD.
 - Upstream update checks are disabled, including when an existing config retains
   `check-updates: true`, so this fork does not recommend replacing itself with 2.7.2.
 - Messaging now uses Paper's native Adventure API. The documented
