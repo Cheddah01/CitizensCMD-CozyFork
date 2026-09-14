@@ -37,6 +37,8 @@ public class CooldownHandler {
 
     private final CitizensCMD plugin;
 
+    private boolean initialized;
+    private boolean closed;
     private File cooldownsFile;
     private File dir;
     private FileConfiguration cooldownsConfigurator;
@@ -58,6 +60,7 @@ public class CooldownHandler {
 
         createBasics();
         cacheData();
+        initialized = true;
     }
 
 
@@ -101,7 +104,7 @@ public class CooldownHandler {
                 }
             }
         } catch (IOException | InvalidConfigurationException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Cannot load cooldown data; existing file has been preserved", e);
         }
     }
 
@@ -109,7 +112,7 @@ public class CooldownHandler {
      * Saves cached data to file
      */
     public synchronized void saveToFile() {
-        if (cooldownsConfigurator == null || cooldownsFile == null) {
+        if (!initialized || closed) {
             return;
         }
         try {
@@ -128,6 +131,19 @@ public class CooldownHandler {
         }
     }
 
+    /** Waits for any active save, flushes once, and prevents old tasks writing after reload. */
+    public synchronized void close() {
+        if (closed) {
+            return;
+        }
+        try {
+            saveToFile();
+        } finally {
+            closed = true;
+            cooldownData.clear();
+        }
+    }
+
     /**
      * Adds an interaction, when ever a player clicks on the NPC
      *
@@ -135,7 +151,10 @@ public class CooldownHandler {
      * @param uuid The player UUID
      * @param time the time it was clicked from System.nanoTime();
      */
-    public void addInteraction(int npc, String uuid, long time) {
+    public synchronized void addInteraction(int npc, String uuid, long time) {
+        if (closed) {
+            return;
+        }
         if (cooldownData.containsKey("cooldown-data.npc-" + npc + "." + uuid)) {
             cooldownData.replace("cooldown-data.npc-" + npc + "." + uuid, time);
         } else {

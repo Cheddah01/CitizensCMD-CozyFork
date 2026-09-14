@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.7.3-cozy.2 — 2026-09-14
+
+- Remove owned command-map entries explicitly; upstream Triumph unregister is a no-op.
+- Unregister listeners and plugin channels, clear state, and continue cleanup after failures.
+- Fully detach temporary player permissions, including nested commands, exceptions and unload.
+- Run confirmation timers on the main thread and cancel pending tasks on unload.
+- Close the cooldown saver under its save lock so old tasks cannot overwrite new data.
+- Abort invalid NPC/cooldown loading without overwriting existing data during shutdown.
+- Add six reload regression tests; clean Java 25 build passes all nine tests.
+- Actual PlugManX reload on a running server remains a manual verification step.
+
 ## 2.7.3-cozy.1 — 2026-09-14
 
 - Start the private Cozy Crafters maintenance fork from upstream `ccd1161`.

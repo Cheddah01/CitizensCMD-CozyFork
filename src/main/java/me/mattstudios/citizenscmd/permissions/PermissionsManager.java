@@ -19,47 +19,75 @@
 package me.mattstudios.citizenscmd.permissions;
 
 
-import java.util.HashMap;
-import java.util.UUID;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
-
 import me.mattstudios.citizenscmd.CitizensCMD;
 
+/** Main-thread temporary permissions; every attachment is removed before unload. */
 public class PermissionsManager {
-
-    private final HashMap<UUID, PermissionAttachment> permissionsData;
+    private final List<Grant> grants = new ArrayList<>();
     private final CitizensCMD plugin;
+    private boolean closed;
+
+    private record Grant(Player player, String permission, PermissionAttachment attachment) {}
 
     public PermissionsManager(CitizensCMD plugin) {
         this.plugin = plugin;
-        permissionsData = new HashMap<>();
     }
 
-    /**
-     * Sets the permission to a player
-     *
-     * @param player     The player to have the permission set
-     * @param permission The permission node
-     */
+    private Grant grant(Player player, String permission) {
+        if (closed) {
+            throw new IllegalStateException("CitizensCMD permissions are closed");
+        }
+        PermissionAttachment attachment = player.addAttachment(plugin);
+        Grant grant = new Grant(player, permission, attachment);
+        grants.add(grant);
+        attachment.setRemovalCallback(removed -> grants.remove(grant));
+        attachment.setPermission(permission, true);
+        return grant;
+    }
+
     public void setPermission(Player player, String permission) {
-        final PermissionAttachment permissionAttachment = player.addAttachment(plugin);
-        permissionsData.put(player.getUniqueId(), permissionAttachment);
-        permissionAttachment.setPermission(permission, true);
+        grant(player, permission);
     }
 
-    /**
-     * Removes the permission from a player
-     *
-     * @param player     The player to remove the permission
-     * @param permission The permission node to be removed
-     */
     public void unsetPermission(Player player, String permission) {
-        PermissionAttachment attachment = permissionsData.remove(player.getUniqueId());
-        if (attachment != null) {
-            attachment.unsetPermission(permission);
+        for (int i = grants.size() - 1; i >= 0; i--) {
+            Grant grant = grants.get(i);
+            if (grant.player().getUniqueId().equals(player.getUniqueId()) && grant.permission().equals(permission)) {
+                remove(grant);
+                return;
+            }
         }
     }
 
+    public void withPermission(Player player, String permission, Runnable command) {
+        Grant grant = grant(player, permission);
+        try {
+            command.run();
+        } finally {
+            remove(grant);
+        }
+    }
+
+    private void remove(Grant grant) {
+        if (grants.remove(grant)) {
+            grant.attachment().setRemovalCallback(null);
+            grant.player().removeAttachment(grant.attachment());
+        }
+    }
+
+    public void close() {
+        closed = true;
+        for (Grant grant : new ArrayList<>(grants)) {
+            try {
+                remove(grant);
+            } catch (RuntimeException exception) {
+                plugin.getLogger().log(Level.SEVERE, "Could not remove temporary NPC permission", exception);
+            }
+        }
+    }
 }

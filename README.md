@@ -1,7 +1,7 @@
 # Cozy Crafters private CitizensCMD fork
 
 Private maintenance fork for **Paper 26.2 / Java 25**, starting with
-**2.7.3-cozy.1**. Keeps the `CitizensCMD` plugin name, `/npcmd`, permissions,
+**2.7.3-cozy.2**. Keeps the `CitizensCMD` plugin name, `/npcmd`, permissions,
 NPC IDs, and existing data paths. Built against Citizens API 2.0.43-SNAPSHOT;
 the server must also run a Citizens build that supports Minecraft 26.2.
 
@@ -12,7 +12,7 @@ JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-25.jdk/Contents/Home mvn cle
 ```
 
 On other systems, set `JAVA_HOME` to the installed Java 25 JDK.
-Install `target/CitizensCMD-2.7.3-cozy.1.jar`, not the `original-` JAR.
+Install `target/CitizensCMD-2.7.3-cozy.2.jar`, not the `original-` JAR.
 Maven resolves dependencies from their public repositories; Citizens and Triumph
 remain snapshot dependencies inherited from the upstream build setup.
 
@@ -32,6 +32,29 @@ Vault and PlaceholderAPI remain optional. Test prices with the server's actual
 Vault economy provider and placeholders with its installed expansions. A staging
 server should also test with both optional plugins absent and a PlugManX reload.
 
+## PlugManX reloads
+
+Version 2.7.3-cozy.2 adds explicit command-map and listener cleanup, removes
+all temporary permission attachments (including when commands throw), closes the
+cooldown saver before unload, and keeps confirmation timers on the server thread.
+Cleanup continues if an individual step fails; errors are logged.
+
+For replacing an already installed JAR:
+
+1. Run `/plugman unload CitizensCMD` and confirm it unloaded.
+2. Replace the JAR, keeping only one CitizensCMD JAR in `plugins/`.
+3. Run `/plugman load CitizensCMD`.
+
+For testing the installed version, run `/plugman reload CitizensCMD`, then check
+`/npcmd` help/tab completion and NPC clicks. Repeat once and confirm each click
+runs once and cooldowns/one-time actions remain intact. Reload CitizensCMD while
+Citizens, Vault and the economy provider remain loaded. Pending delayed commands
+and unconfirmed payments are cancelled at unload; they are not replayed.
+
+These lifecycle behaviors have automated coverage; an actual PlugManX/Paper
+reload still needs to be checked on the server. No server was modified here.
+Command reference: https://github.com/Test-Account666/PlugManX
+
 ## Maintenance
 
 - Local branch: `cozy/26.2`; `upstream` points to HexedHero/CitizensCMD.
@@ -42,8 +65,8 @@ server should also test with both optional plugins absent and a PlugManX reload.
   `CitizensCMD.getApi()` remains; the old internal `getAudiences()` bridge is removed.
 - Shutdown flushes cooldowns, cancels tasks, unregisters commands/channels,
   shuts down metrics, and clears static API/economy references.
-- Three automated tests cover data preservation across shutdown/reload, fresh
-  installation and existing config, and language/native Adventure parsing.
+- Nine automated tests cover data preservation, invalid-file protection, late saves,
+  command removal, temporary permissions, cleanup failures, config, and chat parsing.
 - Build and automated tests pass. Actual NPC clicks, optional integrations, and
   PlugManX reload have **not** been tested on a running server.
 

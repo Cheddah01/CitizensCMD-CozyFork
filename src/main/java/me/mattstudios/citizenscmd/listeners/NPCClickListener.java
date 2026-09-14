@@ -122,7 +122,7 @@ public class NPCClickListener implements Listener {
 
                     audience.sendMessage(messageConfirm);
                     plugin.getWaitingList().put(player.getUniqueId() + "." + npc.getId(), true);
-                    new ConfirmScheduler(plugin, player, npc.getId()).runTaskLaterAsynchronously(plugin, 300L);
+                    new ConfirmScheduler(plugin, player, npc.getId()).runTaskLater(plugin, 300L);
                     return;
                 }
 
@@ -206,7 +206,7 @@ public class NPCClickListener implements Listener {
 
                     audience.sendMessage(messageConfirm);
                     plugin.getWaitingList().put(player.getUniqueId() + "." + npc.getId(), true);
-                    new ConfirmScheduler(plugin, player, npc.getId()).runTaskLaterAsynchronously(plugin, 300L);
+                    new ConfirmScheduler(plugin, player, npc.getId()).runTaskLater(plugin, 300L);
                     return;
                 }
 
@@ -346,9 +346,8 @@ public class NPCClickListener implements Listener {
 
                 default:
                     getScheduler().runTaskLater(plugin, () -> {
-                        plugin.getPermissionsManager().setPermission(player, permissions.get(finalI));
-                        player.chat("/" + commands.get(finalI));
-                        plugin.getPermissionsManager().unsetPermission(player, permissions.get(finalI));
+                        plugin.getPermissionsManager().withPermission(player, permissions.get(finalI),
+                                () -> player.chat("/" + commands.get(finalI)));
                     }, (int) delay * 20L);
                     break;
             }

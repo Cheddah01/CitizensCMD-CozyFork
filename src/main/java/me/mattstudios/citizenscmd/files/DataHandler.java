@@ -120,7 +120,7 @@ public class DataHandler {
             }
 
         } catch (IOException | InvalidConfigurationException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Cannot load NPC data; existing files have been preserved", e);
         }
     }
 

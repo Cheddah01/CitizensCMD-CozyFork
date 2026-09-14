@@ -57,6 +57,12 @@ class CompatibilityTest {
         when(plugin.getServer()).thenReturn(server);
         when(server.getScheduler()).thenReturn(mock(BukkitScheduler.class));
         when(server.getMessenger()).thenReturn(mock(Messenger.class));
+        org.bukkit.command.CommandMap commandMap = mock(org.bukkit.command.CommandMap.class);
+        when(server.getCommandMap()).thenReturn(commandMap);
+        when(commandMap.getKnownCommands()).thenReturn(new java.util.HashMap<>());
+        Field registered = CitizensCMD.class.getDeclaredField("registeredCommands");
+        registered.setAccessible(true);
+        registered.set(plugin, new java.util.HashSet<>());
         DataHandler data = new DataHandler(plugin);
         when(plugin.getDataHandler()).thenReturn(data);
         data.initialize();

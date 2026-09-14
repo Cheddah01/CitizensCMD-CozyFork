@@ -21,13 +21,14 @@ package me.mattstudios.citizenscmd.schedulers;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import me.mattstudios.citizenscmd.CitizensCMD;
+import me.mattstudios.citizenscmd.files.CooldownHandler;
 
 public class CooldownScheduler extends BukkitRunnable {
 
-    private final CitizensCMD plugin;
+    private final CooldownHandler cooldowns;
 
     public CooldownScheduler(CitizensCMD plugin) {
-        this.plugin = plugin;
+        this.cooldowns = plugin.getCooldownHandler();
     }
 
     /**
@@ -35,7 +36,7 @@ public class CooldownScheduler extends BukkitRunnable {
      */
     @Override
     public void run() {
-        plugin.getCooldownHandler().saveToFile();
+        cooldowns.saveToFile();
     }
 
 }

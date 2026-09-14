@@ -26,6 +26,13 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandMap;
+import org.bukkit.command.PluginIdentifiableCommand;
+import java.util.logging.Level;
+import org.bukkit.event.HandlerList;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -87,10 +94,17 @@ public final class CitizensCMD extends JavaPlugin {
     private String newVersion;
     private DisplayFormat displayFormat;
 
+    private final Set<Command> registeredCommands = new HashSet<>();
     private final Map<String, Boolean> waitingList = new HashMap<>();
 
     @Override
     public void onEnable() {
+        usePAPI = false;
+        economy = null;
+        api = null;
+        updateStatus = false;
+        newVersion = null;
+        waitingList.clear();
         // Init setup
         final Audience console = getServer().getConsoleSender();
 
@@ -134,7 +148,15 @@ public final class CitizensCMD extends JavaPlugin {
 
         // Commands and Events
         commandManager = BukkitCommandManager.create(this);
-        registerCommands();
+        Set<Command> previousCommands = new HashSet<>(getServer().getCommandMap().getKnownCommands().values());
+        try {
+            registerCommands();
+        } finally {
+            // Triumph's unregisterCommand is a no-op in this upstream snapshot.
+            getServer().getCommandMap().getKnownCommands().values().stream()
+                    .filter(command -> !previousCommands.contains(command))
+                    .forEach(registeredCommands::add);
+        }
         registerEvents();
 
         // Hooks
@@ -160,20 +182,57 @@ public final class CitizensCMD extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        getServer().getScheduler().cancelTasks(this);
+        cleanup("cancel tasks", () -> getServer().getScheduler().cancelTasks(this));
+        cleanup("unregister listeners", () -> HandlerList.unregisterAll(this));
         if (cooldownHandler != null) {
-            cooldownHandler.saveToFile();
+            cleanup("flush and close cooldowns", cooldownHandler::close);
+        }
+        if (permissionsManager != null) {
+            cleanup("remove temporary permissions", permissionsManager::close);
         }
         if (commandManager != null) {
-            commandManager.unregisterCommands();
+            cleanup("unregister commands", commandManager::unregisterCommands);
         }
+        cleanup("remove command map entries", this::removeCommandEntries);
         if (metrics != null) {
-            metrics.shutdown();
+            cleanup("stop metrics", metrics::shutdown);
         }
+        cleanup("unregister outgoing channels", () -> getServer().getMessenger().unregisterOutgoingPluginChannel(this));
+        cleanup("unregister incoming channels", () -> getServer().getMessenger().unregisterIncomingPluginChannel(this));
         waitingList.clear();
         api = null;
         economy = null;
-        getServer().getMessenger().unregisterOutgoingPluginChannel(this);
+        usePAPI = false;
+        updateStatus = false;
+        newVersion = null;
+        commandManager = null;
+        metrics = null;
+        permissionsManager = null;
+        cooldownHandler = null;
+        dataHandler = null;
+        lang = null;
+        settings = null;
+    }
+
+    private void removeCommandEntries() {
+        CommandMap map = getServer().getCommandMap();
+        Set<Command> owned = new HashSet<>(registeredCommands);
+        for (Command command : map.getKnownCommands().values()) {
+            if (command instanceof PluginIdentifiableCommand identifiable && identifiable.getPlugin() == this) {
+                owned.add(command);
+            }
+        }
+        owned.forEach(command -> command.unregister(map));
+        map.getKnownCommands().entrySet().removeIf(entry -> owned.contains(entry.getValue()));
+        registeredCommands.clear();
+    }
+
+    private void cleanup(String action, Runnable cleanup) {
+        try {
+            cleanup.run();
+        } catch (RuntimeException | LinkageError exception) {
+            getLogger().log(Level.SEVERE, "Failed to " + action + " while disabling CitizensCMD", exception);
+        }
     }
 
     /**
