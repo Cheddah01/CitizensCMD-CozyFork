@@ -1,9 +1,10 @@
 # Cozy Crafters private CitizensCMD fork
 
-Private maintenance fork for **Paper 26.2 / Java 25**, starting with
-**2.7.3-cozy.3**. Keeps the `CitizensCMD` plugin name, `/npcmd`, permissions,
+Private maintenance fork for **Paper 26.2 and 26.3 / Java 25**, using one
+**2.7.3-cozy.4** JAR. Keeps the `CitizensCMD` plugin name, `/npcmd`, permissions,
 NPC IDs, and existing data paths. Built against Citizens API 2.0.43-SNAPSHOT;
-the server must also run a Citizens build that supports Minecraft 26.2.
+the server must also run a Citizens build that supports its Minecraft version.
+This updates the CitizensCMD addon, not the separate Citizens NPC plugin.
 
 ## Build
 
@@ -12,18 +13,32 @@ JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-25.jdk/Contents/Home mvn cle
 ```
 
 On other systems, set `JAVA_HOME` to the installed Java 25 JDK.
-Install `target/CitizensCMD-2.7.3-cozy.3.jar`, not the `original-` JAR.
+Install `target/CitizensCMD-2.7.3-cozy.4.jar`, not the `original-` JAR.
 Maven resolves dependencies from their public repositories; Citizens and Triumph
 remain snapshot dependencies inherited from the upstream build setup.
 
-## Upgrade from 2.7.2
+## Dual-version verification
+
+Compile against Paper 26.2 build 117, then run the same compiled classes with
+Paper 26.3 build 40 alpha (without recompiling):
+
+```sh
+mvn clean verify
+mvn surefire:test -Dpaper.version=26.3.build.40-alpha
+```
+
+The existing sound fixes, NPC IDs, commands, permissions, cooldowns and
+one-time actions retain their existing formats. No configuration migration or
+server data reset is needed. Upstream update checks remain disabled.
+
+## Upgrade from an earlier version
 
 1. Stop the server and back up `plugins/CitizensCMD/` and `plugins/Citizens/`.
    Run `/npcmd reload` before stopping the old plugin to flush recent cooldowns.
 2. Replace the old CitizensCMD JAR with the new JAR; leave only one copy installed.
 3. Keep the complete CitizensCMD data folder, including `config.yml`, `lang/`,
    `data/saves.yml`, and `data/cooldowns.yml`. No data migration is required.
-4. Start with Paper 26.2, Java 25, and a compatible Citizens build.
+4. Start with Paper 26.2 or 26.3, Java 25, and a matching Citizens build.
 5. Check `/npcmd`, left/right clicks, console/player/permission commands,
    delayed commands, messages, sounds, prices, and cooldowns using a test NPC.
    Confirm one-time actions remain consumed after restart.

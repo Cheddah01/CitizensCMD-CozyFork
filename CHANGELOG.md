@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.7.3-cozy.4 — 2026-09-25
+
+- Maintain a single Java 25 JAR for Paper 26.2 and 26.3, compiled against 26.2 build 117 and declaring API 26.2.
+- Verify the same compiled classes against Paper 26.3 build 40 alpha.
+- Preserve existing NPC command data, cooldowns, one-time actions, sound fixes, temporary permission cleanup and reload handling. No data migration or gameplay changes.
+- Keep upstream update checks disabled. The separate Citizens plugin must support the running Minecraft version.
+
+
 ## 2.7.3-cozy.3 — 2026-09-14
 
 - Fix Bukkit sound names such as ENTITY_VILLAGER_YES falling through to raw
