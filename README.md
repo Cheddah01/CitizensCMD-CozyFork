@@ -1,7 +1,7 @@
 # Cozy Crafters private CitizensCMD fork
 
 Private maintenance fork for **Paper 26.2 and 26.3 / Java 25**, using one
-**2.7.3-cozy.4** JAR. Keeps the `CitizensCMD` plugin name, `/npcmd`, permissions,
+**2.7.3-cozy.5** JAR. Keeps the `CitizensCMD` plugin name, `/npcmd`, permissions,
 NPC IDs, and existing data paths. Built against Citizens API 2.0.43-SNAPSHOT;
 the server must also run a Citizens build that supports its Minecraft version.
 This updates the CitizensCMD addon, not the separate Citizens NPC plugin.
@@ -13,7 +13,7 @@ JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-25.jdk/Contents/Home mvn cle
 ```
 
 On other systems, set `JAVA_HOME` to the installed Java 25 JDK.
-Install `target/CitizensCMD-2.7.3-cozy.4.jar`, not the `original-` JAR.
+Install `target/CitizensCMD-2.7.3-cozy.5.jar`, not the `original-` JAR.
 Maven resolves dependencies from their public repositories; Citizens and Triumph
 remain snapshot dependencies inherited from the upstream build setup.
 
@@ -46,6 +46,20 @@ server data reset is needed. Upstream update checks remain disabled.
 Vault and PlaceholderAPI remain optional. Test prices with the server's actual
 Vault economy provider and placeholders with its installed expansions. A staging
 server should also test with both optional plugins absent and a PlugManX reload.
+
+## Copying all NPCs to another world
+
+For a seasonal spawn built with the same layout, copy every NPC across in one go:
+
+```text
+/npcmd copyworld world christmas_spawn          (shows what it would copy)
+/npcmd copyworld world christmas_spawn confirm  (copies them)
+```
+
+Each copy lands at the same x/y/z in the target world with the same skin, settings and click
+commands; the originals stay. Running it again only copies NPCs that don't have a copy there yet.
+Copies get new NPC ids, so other plugins that point at an NPC id still point at the original.
+Remove copies afterwards with Citizens' own `/npc remove`.
 
 ## NPC sounds
 

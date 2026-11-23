@@ -393,11 +393,23 @@ public class DataHandler {
      */
     public boolean hasNPCData(int npc) {
         for (final String key : data.keySet()) {
-            if (key.contains("npc-" + npc)) {
+            if (belongsTo(key, npc)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * True when a data key is this NPC's own. Matching the full {@code npc-data.npc-<id>.} prefix keeps
+     * NPC 1 from also matching NPC 12 (which used to copy or clear the wrong NPC's commands).
+     */
+    static boolean belongsTo(final String key, final int npc) {
+        return key.startsWith(prefix(npc));
+    }
+
+    private static String prefix(final int npc) {
+        return "npc-data.npc-" + npc + ".";
     }
 
     /**
@@ -512,7 +524,7 @@ public class DataHandler {
                 dataConfigurator.set("npc-data.npc-" + npc, null);
             }
 
-            data.keySet().removeIf(key -> key.contains("npc-data.npc-" + npc));
+            data.keySet().removeIf(key -> belongsTo(key, npc));
 
             dataConfigurator.save(savesFile);
         } catch (IOException | InvalidConfigurationException e) {
@@ -534,8 +546,8 @@ public class DataHandler {
             final Map<String, Object> newNpcData = new HashMap<>();
 
             for (final String key : data.keySet()) {
-                if (key.contains("npc-" + npc)) {
-                    final String newKey = key.replace("npc-" + npc, "npc-" + npcClone);
+                if (belongsTo(key, npc)) {
+                    final String newKey = prefix(npcClone) + key.substring(prefix(npc).length());
                     newNpcData.put(newKey, data.get(key));
                     dataConfigurator.set(newKey, data.get(key));
                 }

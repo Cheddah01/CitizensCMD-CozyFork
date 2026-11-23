@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.7.3-cozy.5 — 2026-11-23
+
+- New `/npcmd copyworld <from> <to> [confirm]` (`citizenscmd.copyworld`, op): copies every NPC in one
+  world to the same coordinates in another, with skins, traits and click commands. Without `confirm`
+  it only reports what it would copy. Copies remember their original, so running it again skips NPCs
+  that already have a copy there, and copies are never copied back. The originals are untouched.
+- Fix: NPC data matched ids loosely, so copying NPC 1 (`/npc copy`) also copied NPC 12's commands onto
+  a wrong id, and removing NPC 1 cleared NPC 12's cached commands until a reload. Ids now match exactly.
+- 19 tests pass on Paper 26.2 and 26.3. Not yet run on a live server.
+
 ## 2.7.3-cozy.4 — 2026-09-25
 
 - Maintain a single Java 25 JAR for Paper 26.2 and 26.3, compiled against 26.2 build 117 and declaring API 26.2.

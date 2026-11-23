@@ -53,6 +53,7 @@ import dev.triumphteam.cmd.core.suggestion.SuggestionKey;
 import me.mattstudios.citizenscmd.api.CitizensCMDAPI;
 import me.mattstudios.citizenscmd.commands.AddCommand;
 import me.mattstudios.citizenscmd.commands.CooldownCommand;
+import me.mattstudios.citizenscmd.commands.CopyWorldCommand;
 import me.mattstudios.citizenscmd.commands.EditCommand;
 import me.mattstudios.citizenscmd.commands.HelpCommand;
 import me.mattstudios.citizenscmd.commands.ListCommand;
@@ -252,6 +253,7 @@ public final class CitizensCMD extends JavaPlugin {
         commandManager.registerSuggestion(SuggestionKey.of("type"), (sender, context) -> Arrays.asList("cmd", "perm"));
         commandManager.registerSuggestion(SuggestionKey.of("click"), (sender, context) -> Arrays.asList("left", "right"));
         commandManager.registerSuggestion(SuggestionKey.of("set"), (sender, context) -> Arrays.asList("set", "remove"));
+        commandManager.registerSuggestion(SuggestionKey.of("worlds"), (sender, context) -> getServer().getWorlds().stream().map(org.bukkit.World::getName).collect(Collectors.toList()));
         commandManager.registerSuggestion(SuggestionKey.of("range"), (sender, context) -> IntStream.rangeClosed(1, 9).mapToObj(String::valueOf).collect(Collectors.toList()));
 
         commandManager.registerMessage(BukkitMessageKey.NO_PERMISSION, (sender, context) -> {
@@ -294,7 +296,8 @@ public final class CitizensCMD extends JavaPlugin {
                 new PermissionCommand(this),
                 new PriceCommand(this),
                 new ReloadCommand(this),
-                new RemoveCommand(this)
+                new RemoveCommand(this),
+                new CopyWorldCommand(this)
                 ).forEach(commandManager::registerCommand);
     }
 

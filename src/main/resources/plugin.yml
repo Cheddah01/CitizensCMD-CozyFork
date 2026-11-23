@@ -39,5 +39,8 @@ permissions:
     default: op
   citizenscmd.edit:
     default: op
+  citizenscmd.copyworld:
+    description: Copy every NPC in one world to another (/npcmd copyworld).
+    default: op
   citizenscmd.bypass:
     default: false
